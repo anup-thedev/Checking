@@ -3,9 +3,738 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>RapidResponse - Emergency Services</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .hero-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 20px;
+        }
+
+        .emergency-banner {
+            background: linear-gradient(45deg, #ff4757, #ff6b7d);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(255,71,87,0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .service-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .service-card:hover::before {
+            left: 100%;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .service-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .service-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .service-desc {
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .call-btn {
+            background: linear-gradient(45deg, #ff4757, #ff6b7d);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .call-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255,71,87,0.4);
+        }
+
+        .quick-actions {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .quick-actions h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 1.3rem;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #5f27cd, #8854d0);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(95,39,205,0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #00c851, #007e33);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,200,81,0.3);
+        }
+
+        .location-info {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #00c851;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .emergency-contacts {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .contact-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .contact-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #00c851, #007e33);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            z-index: 1001;
+            animation: slideInRight 0.3s ease;
+            display: none;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @media (max-width: 768px) {
+            .logo { font-size: 2rem; }
+            .services-grid { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+        }
+    </style>
 </head>
 <body>
-    <h1> merging </h1>
+    <canvas class="hero-bg" id="hero-canvas"></canvas>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">🚨 RapidResponse</div>
+            <div class="tagline">Your 24/7 Emergency Services Hub</div>
+        </div>
+
+        <div class="emergency-banner">
+            <div class="status-indicator"></div>
+            Emergency Services Active - Response Time: &lt; 3 minutes
+        </div>
+
+        <div class="location-info">
+            <strong>📍 Current Location:</strong> Kathmandu, Bagmati Province, Nepal<br>
+            <small>Location services enabled for faster response</small>
+        </div>
+
+        <div class="services-grid">
+            <div class="service-card" onclick="openModal('ambulance')">
+                <div class="service-icon">🚑</div>
+                <div class="service-title">Ambulance</div>
+                <div class="service-desc">24/7 medical emergency response with qualified paramedics</div>
+                <button class="call-btn">Request Ambulance</button>
+            </div>
+
+            <div class="service-card" onclick="openModal('fire')">
+                <div class="service-icon">🚒</div>
+                <div class="service-title">Fire Brigade</div>
+                <div class="service-desc">Fire emergency response and rescue operations</div>
+                <button class="call-btn">Call Fire Brigade</button>
+            </div>
+
+            <div class="service-card" onclick="openModal('police')">
+                <div class="service-icon">🚔</div>
+                <div class="service-title">Police</div>
+                <div class="service-desc">Law enforcement and emergency security assistance</div>
+                <button class="call-btn">Contact Police</button>
+            </div>
+
+            <div class="service-card" onclick="openModal('hospital')">
+                <div class="service-icon">🏥</div>
+                <div class="service-title">Hospital</div>
+                <div class="service-desc">Find nearest hospitals and medical facilities</div>
+                <button class="call-btn">Find Hospital</button>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <h3>⚡ Quick Actions</h3>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="sendPanicAlert()">
+                    🆘 Panic Alert
+                </button>
+                <button class="action-btn" onclick="shareLocation()">
+                    📍 Share Location
+                </button>
+                <button class="action-btn" onclick="medicalInfo()">
+                    🩺 Medical Info
+                </button>
+                <button class="action-btn" onclick="emergencyContacts()">
+                    📞 Emergency Contacts
+                </button>
+            </div>
+        </div>
+
+        <div class="emergency-contacts">
+            <h3>📞 Emergency Hotlines</h3>
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <strong>Police</strong><br>
+                    <span style="font-size: 1.2rem; color: #e74c3c;">100</span>
+                </div>
+                <div class="contact-item">
+                    <strong>Fire Brigade</strong><br>
+                    <span style="font-size: 1.2rem; color: #e74c3c;">101</span>
+                </div>
+                <div class="contact-item">
+                    <strong>Ambulance</strong><br>
+                    <span style="font-size: 1.2rem; color: #e74c3c;">102</span>
+                </div>
+                <div class="contact-item">
+                    <strong>Tourist Helpline</strong><br>
+                    <span style="font-size: 1.2rem; color: #e74c3c;">1144</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="serviceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Emergency Request</h2>
+            <form id="emergencyForm">
+                <div class="form-group">
+                    <label>Your Name *</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number *</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                <div class="form-group">
+                    <label>Emergency Type *</label>
+                    <select id="emergencyType" required>
+                        <option value="">Select Emergency Type</option>
+                        <option value="medical">Medical Emergency</option>
+                        <option value="accident">Accident</option>
+                        <option value="fire">Fire</option>
+                        <option value="crime">Crime/Security</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Location *</label>
+                    <input type="text" id="location" value="Kathmandu, Bagmati Province" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="description" rows="4" placeholder="Please describe the emergency situation..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Priority Level</label>
+                    <select id="priority">
+                        <option value="high">High - Life Threatening</option>
+                        <option value="medium">Medium - Urgent</option>
+                        <option value="low">Low - Non-urgent</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn">🚨 Send Emergency Request</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Backend simulation - In production, this would connect to real APIs
+        class EmergencyService {
+            constructor() {
+                this.requests = [];
+                this.init3DBackground();
+            }
+
+            init3DBackground() {
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('hero-canvas'), alpha: true });
+                
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                
+                // Create floating particles
+                const geometry = new THREE.SphereGeometry(0.5, 8, 8);
+                const material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
+                
+                const particles = [];
+                for (let i = 0; i < 50; i++) {
+                    const particle = new THREE.Mesh(geometry, material);
+                    particle.position.set(
+                        (Math.random() - 0.5) * 100,
+                        (Math.random() - 0.5) * 100,
+                        (Math.random() - 0.5) * 100
+                    );
+                    particles.push(particle);
+                    scene.add(particle);
+                }
+                
+                camera.position.z = 30;
+                
+                function animate() {
+                    requestAnimationFrame(animate);
+                    
+                    particles.forEach(particle => {
+                        particle.rotation.x += 0.01;
+                        particle.rotation.y += 0.01;
+                        particle.position.y += Math.sin(Date.now() * 0.001 + particle.position.x) * 0.01;
+                    });
+                    
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+
+            submitRequest(data) {
+                const request = {
+                    id: Date.now(),
+                    timestamp: new Date(),
+                    ...data,
+                    status: 'dispatched'
+                };
+                
+                this.requests.push(request);
+                
+                // Simulate backend processing
+                setTimeout(() => {
+                    this.updateRequestStatus(request.id, 'en-route');
+                }, 2000);
+                
+                return request;
+            }
+
+            updateRequestStatus(id, status) {
+                const request = this.requests.find(r => r.id === id);
+                if (request) {
+                    request.status = status;
+                    this.showNotification(`Request ${id}: Status updated to ${status}`);
+                }
+            }
+
+            showNotification(message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.style.display = 'block';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+
+            getEstimatedArrival() {
+                return Math.floor(Math.random() * 10) + 3; // 3-12 minutes
+            }
+        }
+
+        const emergencyService = new EmergencyService();
+        let currentService = '';
+
+        function openModal(service) {
+            currentService = service;
+            const modal = document.getElementById('serviceModal');
+            const title = document.getElementById('modalTitle');
+            
+            const serviceNames = {
+                ambulance: '🚑 Ambulance Request',
+                fire: '🚒 Fire Brigade Request',
+                police: '🚔 Police Request',
+                hospital: '🏥 Hospital Information'
+            };
+            
+            title.textContent = serviceNames[service] || 'Emergency Request';
+            modal.style.display = 'block';
+            
+            // Auto-fill emergency type based on service
+            const emergencyType = document.getElementById('emergencyType');
+            const typeMapping = {
+                ambulance: 'medical',
+                fire: 'fire',
+                police: 'crime',
+                hospital: 'medical'
+            };
+            
+            if (typeMapping[service]) {
+                emergencyType.value = typeMapping[service];
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('serviceModal').style.display = 'none';
+        }
+
+        function sendPanicAlert() {
+            const data = {
+                type: 'panic_alert',
+                name: 'Anonymous',
+                phone: 'Location-based',
+                emergencyType: 'medical',
+                location: 'Kathmandu, Bagmati Province',
+                description: 'PANIC ALERT - Immediate assistance required',
+                priority: 'high'
+            };
+            
+            const request = emergencyService.submitRequest(data);
+            const eta = emergencyService.getEstimatedArrival();
+            
+            emergencyService.showNotification(
+                `🆘 PANIC ALERT SENT! Emergency services dispatched. ETA: ${eta} minutes. Request ID: ${request.id}`
+            );
+        }
+
+        function shareLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        emergencyService.showNotification(
+                            `📍 Location shared: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+                        );
+                    },
+                    () => {
+                        emergencyService.showNotification(
+                            '📍 Location: Kathmandu, Bagmati Province (Default)'
+                        );
+                    }
+                );
+            } else {
+                emergencyService.showNotification(
+                    '📍 Location: Kathmandu, Bagmati Province (Default)'
+                );
+            }
+        }
+
+        function medicalInfo() {
+            emergencyService.showNotification(
+                '🩺 Medical info feature - Store your medical history, allergies, and emergency contacts for faster treatment'
+            );
+        }
+
+        function emergencyContacts() {
+            emergencyService.showNotification(
+                '📞 Emergency contacts: Police (100), Fire (101), Ambulance (102), Tourist Helpline (1144)'
+            );
+        }
+
+        // Form submission handler
+        document.getElementById('emergencyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                type: currentService,
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                emergencyType: document.getElementById('emergencyType').value,
+                location: document.getElementById('location').value,
+                description: document.getElementById('description').value,
+                priority: document.getElementById('priority').value
+            };
+            
+            const request = emergencyService.submitRequest(formData);
+            const eta = emergencyService.getEstimatedArrival();
+            
+            closeModal();
+            
+            emergencyService.showNotification(
+                `✅ Emergency request submitted! Services dispatched. ETA: ${eta} minutes. Request ID: ${request.id}`
+            );
+            
+            // Reset form
+            document.getElementById('emergencyForm').reset();
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('serviceModal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Service worker simulation for offline functionality
+        if ('serviceWorker' in navigator) {
+            console.log('Service Worker support detected - offline functionality available');
+        }
+
+        // Auto-location detection
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    console.log('Location detected:', position.coords);
+                },
+                (error) => {
+                    console.log('Using default location: Kathmandu, Nepal');
+                }
+            );
+        }
+
+        console.log('🚨 RapidResponse Emergency Services - System Online');
+        console.log('Backend simulation active - Ready to handle emergency requests');
+    </script>
 </body>
 </html>
